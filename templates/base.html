@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Phishing Simulator{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS Variables ─────────────────────────────────── */
+    :root {
+      --bg:       #0a0c10;
+      --surface:  #111318;
+      --border:   #1e2229;
+      --accent:   #ff4d4d;
+      --accent2:  #ffb347;
+      --green:    #39d98a;
+      --blue:     #4d9fff;
+      --text:     #e8eaf0;
+      --muted:    #6b7280;
+      --mono:     'JetBrains Mono', monospace;
+      --sans:     'Space Grotesk', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    /* ── Navigation ─────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+    .nav-badge {
+      background: rgba(255,77,77,0.15);
+      border: 1px solid rgba(255,77,77,0.3);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.1em;
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+    .nav-spacer { flex: 1; }
+
+    /* ── Shared Layout ──────────────────────────────────── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ── Warning Banner ─────────────────────────────────── */
+    .edu-banner {
+      background: rgba(255,179,71,0.08);
+      border: 1px solid rgba(255,179,71,0.25);
+      border-left: 3px solid var(--accent2);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: var(--accent2);
+      margin-bottom: 2rem;
+      font-family: var(--mono);
+    }
+
+    /* ── Cards ──────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.4rem;
+      border-radius: 6px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-danger  { background: var(--accent);  color: #fff; }
+    .btn-safe    { background: var(--green);   color: #000; }
+    .btn-blue    { background: var(--blue);    color: #000; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn:hover   { filter: brightness(1.15); transform: translateY(-1px); }
+
+    /* ── Tag pills ───────────────────────────────────────── */
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .tag-red    { background: rgba(255,77,77,0.15);  color: var(--accent);  border: 1px solid rgba(255,77,77,0.3); }
+    .tag-green  { background: rgba(57,217,138,0.12); color: var(--green);   border: 1px solid rgba(57,217,138,0.3);}
+    .tag-orange { background: rgba(255,179,71,0.12); color: var(--accent2); border: 1px solid rgba(255,179,71,0.3);}
+    .tag-blue   { background: rgba(77,159,255,0.12); color: var(--blue);    border: 1px solid rgba(77,159,255,0.3);}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-brand">⚠ PHISH·SIM</a>
+    <span class="nav-badge">EDUCATIONAL</span>
+    <a href="/fake-login">Fake Login</a>
+    <a href="/url-checker">URL Checker</a>
+    <a href="/dashboard">Dashboard</a>
+    <div class="nav-spacer"></div>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+</body>
+</html>

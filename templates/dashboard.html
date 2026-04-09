@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Attacker Dashboard{% endblock %}
+
+{% block head %}
+<style>
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .mono { font-family: var(--mono); color: var(--accent); }
+  .meta { color: var(--muted); font-size: 0.75rem; }
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="edu-banner">
+    ⚠️  This simulates the attacker's view — a real phishing kit would display this data server-side, log it to files, or email it to the attacker automatically.
+  </div>
+
+  <h1 style="font-size:1.4rem; margin-bottom:0.5rem;">🕵️ Attacker's Dashboard</h1>
+  <p style="color:var(--muted); font-size:0.85rem; margin-bottom:2rem;">
+    This is what an attacker sees after victims submit a phishing form.
+  </p>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-num">{{ credentials | length }}</span>
+      <div class="stat-label">Credentials Captured</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ credentials | map(attribute='ip') | list | unique | list | length }}</span>
+      <div class="stat-label">Unique IPs</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" style="color:var(--green);">100%</span>
+      <div class="stat-label">Victims Unaware (demo)</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" style="padding:0; overflow:hidden;">
+    {% if credentials %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>USERNAME</th>
+          <th>PASSWORD</th>
+          <th>IP ADDRESS</th>
+          <th>TIMESTAMP</th>
+          <th>USER AGENT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cred in credentials %}
+        <tr>
+          <td class="mono">{{ loop.index }}</td>
+          <td class="mono">{{ cred.username or '—' }}</td>
+          <td class="mono" style="color:var(--accent2);">{{ cred.password or '—' }}</td>
+          <td class="meta">{{ cred.ip }}</td>
+          <td class="meta">{{ cred.timestamp }}</td>
+          <td class="meta" style="max-width:200px; word-break:break-all;">{{ cred.user_agent }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div style="font-size:2rem; margin-bottom:0.5rem;">📭</div>
+      <p>No credentials captured yet.</p>
+      <p style="font-size:0.8rem; margin-top:0.5rem;">
+        <a href="/fake-login" style="color:var(--blue);">Try the fake login page</a> to generate demo data.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+    <a href="/fake-login" class="btn btn-danger">Try Fake Login</a>
+    <a href="/" class="btn btn-outline">← Home</a>
+  </div>
+
+</div>
+{% endblock %}

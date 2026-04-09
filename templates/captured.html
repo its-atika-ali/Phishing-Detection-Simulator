@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}You've Been Phished!{% endblock %}
+
+{% block head %}
+<style>
+  .reveal-card {
+    max-width: 620px;
+    margin: 3rem auto;
+    text-align: center;
+  }
+  .big-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 1s ease infinite alternate;
+  }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+  .cred-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+    margin: 1.5rem 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .cred-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-key   { color: var(--muted); width: 110px; flex-shrink: 0; }
+  .cred-value { color: var(--accent); word-break: break-all; }
+
+  .lessons {
+    text-align: left;
+    margin: 1.5rem 0;
+  }
+  .lesson-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .lesson-item:last-child { border-bottom: none; }
+  .lesson-icon { flex-shrink: 0; font-size: 1.1rem; }
+  .lesson-text { color: var(--muted); line-height: 1.5; }
+  .lesson-text strong { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="reveal-card">
+
+  <!-- Hook -->
+  <div class="big-icon">🎣</div>
+  <h1 style="font-size:2rem; color:var(--accent); margin-bottom:0.5rem;">You've Been Phished!</h1>
+  <p style="color:var(--muted); font-size:0.9rem; line-height:1.6; margin-bottom:1.5rem;">
+    If this were a real attack, an attacker just captured your credentials.
+    Here's exactly what they would have received:
+  </p>
+
+  <!-- Captured Data Display -->
+  {% if entry %}
+  <div class="cred-box">
+    <div class="cred-row">
+      <span class="cred-key">Username</span>
+      <span class="cred-value">{{ entry.username or '(empty)' }}</span>
+    </div>
+    <div class="cred-row">
+      <span class="cred-key">Password</span>
+      <span class="cred-value">{{ entry.password or '(empty)' }}</span>
+    </div>
+    <div class="cred-row">
+      <span class="cred-key">IP Address</span>
+      <span class="cred-value" style="color:var(--blue);">{{ entry.ip }}</span>
+    </div>
+    <div class="cred-row">
+      <span class="cred-key">Timestamp</span>
+      <span class="cred-value" style="color:var(--muted);">{{ entry.timestamp }}</span>
+    </div>
+    <div class="cred-row">
+      <span class="cred-key">User Agent</span>
+      <span class="cred-value" style="color:var(--muted); font-size:0.75rem;">{{ entry.user_agent }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <p style="color:var(--muted); font-size:0.78rem; margin-bottom:1.5rem;">
+    💡 After harvesting credentials, a real attacker immediately redirects you to the legitimate site — so you think you just mistyped your password and never suspect anything.
+  </p>
+
+  <!-- Lessons Learned -->
+  <div class="card lessons">
+    <h2 style="font-size:0.85rem; font-family:var(--mono); color:var(--muted); letter-spacing:0.1em; margin-bottom:0.5rem;">HOW TO PROTECT YOURSELF</h2>
+    
+    {% for item in [
+      ("🔗", "Always check the URL", "Before entering credentials, verify the exact domain in the address bar. Attackers use lookalike domains like <code>secure-g00gle.com</code>."),
+      ("🔒", "HTTPS ≠ Legitimate", "A padlock only means the connection is encrypted — NOT that the site is trustworthy. Phishing sites use HTTPS too."),
+      ("📧", "Be suspicious of unexpected links", "Legitimate companies rarely send unsolicited links asking you to 'verify your account now'."),
+      ("🔑", "Use a Password Manager", "A password manager auto-fills only on the real domain, so it will refuse to fill in a phishing page — a built-in protection."),
+      ("📱", "Enable Multi-Factor Authentication", "Even if credentials are stolen, MFA prevents the attacker from logging in without your second factor."),
+      ("📰", "Report suspicious pages", "Use your browser's 'Report Phishing' feature or forward phishing emails to your IT/security team.")
+    ] %}
+    <div class="lesson-item">
+      <span class="lesson-icon">{{ item[0] }}</span>
+      <div class="lesson-text">
+        <strong>{{ item[1] }}:</strong> {{ item[2] | safe }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+    <a href="/url-checker" class="btn btn-blue">Check a Suspicious URL</a>
+    <a href="/dashboard" class="btn btn-outline">View All Captured Data</a>
+    <a href="/" class="btn btn-outline">← Back to Home</a>
+  </div>
+
+</div>
+</div>
+{% endblock %}

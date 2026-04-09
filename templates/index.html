@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Phishing Simulator — Home{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="edu-banner">
+    ⚠️  EDUCATIONAL DEMO ONLY — All credentials entered here are fake and stored locally for learning purposes only. Never deploy this on real users.
+  </div>
+
+  <!-- Hero -->
+  <div style="text-align:center; padding: 3rem 0 2rem;">
+    <div style="font-family:var(--mono); font-size:0.75rem; color:var(--accent); letter-spacing:0.2em; margin-bottom:1rem;">CYBERSECURITY TRAINING TOOL</div>
+    <h1 style="font-size:2.6rem; font-weight:700; line-height:1.1; margin-bottom:1rem;">
+      Phishing Attack<br><span style="color:var(--accent);">Simulator</span>
+    </h1>
+    <p style="color:var(--muted); max-width:520px; margin:0 auto 2rem; line-height:1.7; font-size:0.95rem;">
+      Understand how phishing attacks work by experiencing them firsthand in a safe, controlled environment. Learn to recognize red flags before attackers exploit them.
+    </p>
+  </div>
+
+  <!-- Module Cards -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:3rem;">
+
+    <!-- Fake Login -->
+    <div class="card" style="border-top:3px solid var(--accent);">
+      <div style="font-size:2rem; margin-bottom:1rem;">🎭</div>
+      <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">Fake Login Page</h2>
+      <p style="color:var(--muted); font-size:0.85rem; line-height:1.6; margin-bottom:1.2rem;">
+        Experience a cloned login page that looks identical to a real service. See exactly how attackers harvest your credentials without you noticing.
+      </p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.2rem;">
+        <span class="tag tag-red">Credential Harvesting</span>
+        <span class="tag tag-orange">UI Cloning</span>
+      </div>
+      <a href="/fake-login" class="btn btn-danger">Try the Demo →</a>
+    </div>
+
+    <!-- URL Checker -->
+    <div class="card" style="border-top:3px solid var(--blue);">
+      <div style="font-size:2rem; margin-bottom:1rem;">🔍</div>
+      <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">URL Phishing Detector</h2>
+      <p style="color:var(--muted); font-size:0.85rem; line-height:1.6; margin-bottom:1.2rem;">
+        Paste any URL and get an instant risk analysis. 10+ rule-based checks reveal typosquatting, homograph attacks, suspicious subdomains, and more.
+      </p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.2rem;">
+        <span class="tag tag-blue">10+ Heuristics</span>
+        <span class="tag tag-green">Risk Scoring</span>
+      </div>
+      <a href="/url-checker" class="btn btn-blue">Check a URL →</a>
+    </div>
+
+  </div>
+
+  <!-- How it Works -->
+  <div class="card">
+    <h2 style="font-size:1rem; margin-bottom:1.5rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.05em;">HOW A PHISHING ATTACK WORKS</h2>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;">
+      {% for step in [
+        ("01", "Attacker clones a trusted website (bank, Google, PayPal)", "🖨️"),
+        ("02", "Victim receives a convincing email or link leading to the fake site", "📧"),
+        ("03", "Victim enters their credentials believing it's the real site", "🔑"),
+        ("04", "Attacker captures credentials and redirects victim to real site", "💀")
+      ] %}
+      <div style="text-align:center; padding:1rem;">
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.5rem;">STEP {{ step[0] }}</div>
+        <div style="font-size:1.8rem; margin-bottom:0.75rem;">{{ step[2] }}</div>
+        <p style="font-size:0.78rem; color:var(--muted); line-height:1.5;">{{ step[1] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:3rem; color:var(--muted); font-size:0.78rem; font-family:var(--mono);">
+    Built for educational purposes · No real credentials are stored or transmitted
+  </div>
+
+</div>
+{% endblock %}

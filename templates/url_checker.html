@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}URL Phishing Checker{% endblock %}
+
+{% block head %}
+<style>
+  .checker-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* ── URL input area ─────────────────────────── */
+  .url-input-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .url-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+  .url-input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(77,159,255,0.1);
+  }
+  .url-input::placeholder { color: var(--muted); }
+
+  /* ── Results panel ──────────────────────────── */
+  #results { display: none; }
+
+  .score-bar-wrap {
+    background: var(--bg);
+    border-radius: 999px;
+    height: 8px;
+    margin: 0.75rem 0 0.5rem;
+    overflow: hidden;
+  }
+  .score-bar {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  .verdict-badge {
+    display: inline-block;
+    padding: 0.4rem 1.2rem;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .flags-list { list-style: none; margin-top: 1rem; }
+  .flags-list li {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.83rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .flags-list li:last-child { border-bottom: none; }
+
+  /* ── Examples ───────────────────────────────── */
+  .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top:0.75rem; }
+  .example-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.35rem 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--blue);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .example-chip:hover {
+    border-color: var(--blue);
+    background: rgba(77,159,255,0.08);
+  }
+
+  /* ── Loader ─────────────────────────────────── */
+  .loader {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size:0.82rem;
+    margin: 1rem 0;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="checker-wrap">
+
+  <div class="edu-banner">
+    ⚠️  This uses heuristic rules (not ML) for demonstration. Always use professional tools for real threat analysis.
+  </div>
+
+  <h1 style="font-size:1.6rem; margin-bottom:0.4rem;">🔍 URL Phishing Detector</h1>
+  <p style="color:var(--muted); font-size:0.87rem; margin-bottom:1.5rem; line-height:1.6;">
+    Paste a suspicious URL below. Our 10+ rule engine checks for typosquatting,
+    homograph attacks, suspicious TLDs, IP addresses, and more.
+  </p>
+
+  <!-- Input -->
+  <div class="url-input-group">
+    <input
+      type="text"
+      id="urlInput"
+      class="url-input"
+      placeholder="e.g. http://paypa1-secure.login.tk/verify"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button class="btn btn-blue" onclick="checkUrl()">Analyze →</button>
+  </div>
+
+  <!-- Quick Examples -->
+  <div style="margin-bottom:2rem;">
+    <div style="font-size:0.75rem; color:var(--muted); font-family:var(--mono); margin-bottom:0.5rem;">TRY AN EXAMPLE:</div>
+    <div class="examples">
+      {% for url in [
+        "http://paypa1-secure.login.tk/verify@user",
+        "https://secure.google.com.phish.xyz/login",
+        "http://192.168.1.1/bank/signin",
+        "https://google.com",
+        "https://xn--pypal-4ve.com/login",
+        "http://amaz0n-verify.support/account/confirm-now?session=abc123xyz"
+      ] %}
+      <span class="example-chip" onclick="setExample('{{ url }}')">{{ url[:45] }}{% if url|length > 45 %}…{% endif %}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    Analyzing URL patterns…
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.1em; margin-bottom:0.4rem;">VERDICT</div>
+        <div id="verdictBadge" class="verdict-badge">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.1em; margin-bottom:0.4rem;">RISK SCORE</div>
+        <div style="font-family:var(--mono); font-size:1.8rem; font-weight:700;" id="scoreNum">0</div>
+        <div style="font-size:0.72rem; color:var(--muted);">out of 100</div>
+      </div>
+    </div>
+
+    <div class="score-bar-wrap">
+      <div class="score-bar" id="scoreBar" style="width:0%"></div>
+    </div>
+
+    <div style="font-family:var(--mono); font-size:0.72rem; color:var(--muted); word-break:break-all;" id="analyzedUrl"></div>
+
+    <div style="margin-top:1.2rem;">
+      <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.1em; margin-bottom:0.25rem;">DETECTION FLAGS</div>
+      <ul class="flags-list" id="flagsList"></ul>
+    </div>
+  </div>
+
+  <!-- Rules Reference -->
+  <div class="card" style="margin-top:1.5rem;">
+    <div style="font-size:0.75rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.1em; margin-bottom:1rem;">DETECTION RULES EXPLAINED</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+      {% for rule in [
+        ("HTTP (no TLS)", "Unencrypted connection; attackers avoid paying for SSL"),
+        ("IP Address URL", "Real sites use domain names, not bare IP addresses"),
+        ("Deep Subdomains", "3+ dots suggest fake subdomain tricks (google.com.evil.org)"),
+        ("Brand in Subdomain", "Brand name appears but isn't the actual brand domain"),
+        ("Dangerous Keywords", "2+ phishing keywords: login, verify, secure, update…"),
+        ("Long URL (>100 chars)", "Extra length hides the real destination in obfuscation"),
+        ("@ Symbol", "Everything before @ is ignored by browser; tricks victims"),
+        ("Double Slashes in Path", "Open redirect via //evil.com tricks in the path"),
+        ("Punycode (xn--)", "Lookalike characters: аpple.com (Cyrillic а) vs apple.com"),
+        ("Abused TLD", "Free TLDs (.tk .ml .xyz .click) favored by phishers")
+      ] %}
+      <div style="display:flex; gap:0.5rem; font-size:0.78rem; padding:0.4rem 0; border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent); font-family:var(--mono); white-space:nowrap;">{{ rule[0] }}</span>
+        <span style="color:var(--muted);">{{ rule[1] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  // ── Set an example URL in the input ──────────────────────
+  function setExample(url) {
+    document.getElementById('urlInput').value = url;
+    checkUrl();
+  }
+
+  // ── Analyze URL via the Flask API endpoint ────────────────
+  async function checkUrl() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) return;
+
+    // Show loader, hide results
+    document.getElementById('loader').style.display  = 'flex';
+    document.getElementById('results').style.display = 'none';
+
+    try {
+      // POST to our /api/check-url endpoint
+      const res  = await fetch('/api/check-url', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ url })
+      });
+      const data = await res.json();
+
+      renderResults(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      document.getElementById('loader').style.display = 'none';
+    }
+  }
+
+  // ── Render results into the DOM ───────────────────────────
+  function renderResults(data) {
+    const score   = data.score   || 0;
+    const verdict = data.verdict || 'UNKNOWN';
+    const flags   = data.flags   || [];
+
+    // Color map for verdicts
+    const colors = {
+      'SAFE':            { bar: '#39d98a', badge: 'rgba(57,217,138,0.15)',  text: '#39d98a',  border: 'rgba(57,217,138,0.3)' },
+      'SUSPICIOUS':      { bar: '#ffb347', badge: 'rgba(255,179,71,0.12)',  text: '#ffb347',  border: 'rgba(255,179,71,0.3)' },
+      'LIKELY PHISHING': { bar: '#ff7a1a', badge: 'rgba(255,122,26,0.12)',  text: '#ff7a1a',  border: 'rgba(255,122,26,0.3)' },
+      'DANGEROUS':       { bar: '#ff4d4d', badge: 'rgba(255,77,77,0.15)',   text: '#ff4d4d',  border: 'rgba(255,77,77,0.3)' }
+    };
+    const c = colors[verdict] || colors['DANGEROUS'];
+
+    // Update score bar
+    document.getElementById('scoreBar').style.width      = score + '%';
+    document.getElementById('scoreBar').style.background = c.bar;
+    document.getElementById('scoreNum').textContent      = score;
+    document.getElementById('scoreNum').style.color      = c.bar;
+
+    // Update verdict badge
+    const badge = document.getElementById('verdictBadge');
+    badge.textContent          = verdict;
+    badge.style.background     = c.badge;
+    badge.style.color          = c.text;
+    badge.style.border         = '1px solid ' + c.border;
+
+    // Update analyzed URL
+    document.getElementById('analyzedUrl').textContent = data.url || '';
+
+    // Update flags list
+    const list = document.getElementById('flagsList');
+    list.innerHTML = '';
+    flags.forEach(flag => {
+      const li = document.createElement('li');
+      li.textContent = flag;
+      list.appendChild(li);
+    });
+
+    document.getElementById('results').style.display = 'block';
+  }
+
+  // Also allow pressing Enter to submit
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkUrl();
+  });
+</script>
+{% endblock %}
